@@ -205,6 +205,27 @@ label {
   color: var(--muted);
 }
 
+.screenshot {
+  margin: 1.25rem 0 0;
+  padding: 0;
+}
+
+.screenshot img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(43, 42, 40, 0.08);
+}
+
+.screenshot figcaption {
+  margin-top: 0.65rem;
+  font-size: 0.88rem;
+  color: var(--muted);
+  text-align: center;
+}
+
 footer {
   margin-top: 2rem;
   text-align: center;
