@@ -270,6 +270,24 @@ label {
   text-align: center;
 }
 
+.preview-frame-wrap {
+  margin-top: 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  background: #faf8f5;
+  min-height: 420px;
+}
+
+#preview-frame {
+  display: block;
+  width: 100%;
+  min-height: 420px;
+  height: 70vh;
+  border: 0;
+  background: #fff;
+}
+
 footer {
   margin-top: 2rem;
   text-align: center;

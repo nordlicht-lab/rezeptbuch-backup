@@ -22,7 +22,7 @@
       <h2 id="step-quick-title"><span class="step-num">★</span> Schnellweg: URL eingeben</h2>
       <p>
         Gib die Adresse der Rezeptseite ein – die Seite sucht automatisch nach dem
-        eingebetteten <strong>JSON-LD</strong>-Rezept und füllt Schritt 3 für dich aus.
+        eingebetteten <strong>JSON-LD</strong>-Rezept und füllt Schritt 2 für dich aus.
       </p>
       <label for="url-input">Rezept-URL</label>
       <div class="url-row">
@@ -100,9 +100,9 @@
 
     <section class="step-card" aria-labelledby="step3-title">
       <h2 id="step3-title"><span class="step-num">3</span> Markdown-Ergebnis</h2>
-      <p>Das Ergebnis ist sortiert in drei Teile: Rezeptinfo, Zutaten, Zubereitung.</p>
+      <p>Das Ergebnis ist sortiert in drei Teile: Rezeptinfo, Zutaten, Zubereitung – hier auch bearbeitbar.</p>
       <label for="markdown-output">Markdown-Ausgabe</label>
-      <textarea id="markdown-output" class="output" readonly placeholder="Hier erscheint das formatierte Rezept …" spellcheck="false"></textarea>
+      <textarea id="markdown-output" class="output" placeholder="Hier erscheint das formatierte Rezept …" spellcheck="false"></textarea>
       <div class="copy-row" style="margin-top: 0.75rem;">
         <button type="button" class="primary" id="copy-md-btn">Markdown kopieren</button>
       </div>
@@ -113,11 +113,37 @@
       </div>
     </section>
 
+    <section class="step-card" aria-labelledby="step4-title">
+      <h2 id="step4-title"><span class="step-num">4</span> Rezeptseite &amp; PDF</h2>
+      <p>
+        Aus dem Markdown (auch nach Bearbeitung) entsteht eine saubere Rezeptseite im
+        Kochbuch-Design – wie im Projekt <em>3_rezepte</em>.
+      </p>
+      <div class="copy-row">
+        <button type="button" class="primary" id="preview-update-btn">Vorschau aktualisieren</button>
+        <button type="button" id="preview-tab-btn">In neuem Tab öffnen</button>
+        <button type="button" id="preview-pdf-btn">Als PDF speichern</button>
+      </div>
+      <p id="preview-status" class="status" role="status" aria-live="polite"></p>
+      <div class="preview-frame-wrap">
+        <iframe
+          id="preview-frame"
+          title="Rezeptvorschau"
+          sandbox="allow-same-origin allow-modals"
+        ></iframe>
+      </div>
+      <div class="tip-box">
+        <strong>PDF:</strong> „Als PDF speichern“ öffnet den Druckdialog → Ziel
+        <strong>Als PDF sichern</strong> wählen (Chrome/Safari/Firefox).
+      </div>
+    </section>
+
     <footer>
       Statische Seite – Markdown-Erstellung läuft im Browser. Beim URL-Laden wird die
       Rezeptseite über einen Proxy abgerufen.
     </footer>
   </div>
+  <script src="preview.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

@@ -340,6 +340,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const copyCmdBtn = document.getElementById("copy-cmd-btn");
   const copyMdBtn = document.getElementById("copy-md-btn");
   const clearBtn = document.getElementById("clear-btn");
+  const previewFrame = document.getElementById("preview-frame");
+  const previewUpdateBtn = document.getElementById("preview-update-btn");
+  const previewTabBtn = document.getElementById("preview-tab-btn");
+  const previewPdfBtn = document.getElementById("preview-pdf-btn");
+  const previewStatus = document.getElementById("preview-status");
 
   copyCmdBtn.addEventListener("click", () => copyText(CONSOLE_CMD, copyCmdBtn));
 
@@ -353,14 +358,32 @@ document.addEventListener("DOMContentLoaded", () => {
     urlStatus.className = `status ${type}`.trim();
   }
 
+  function setPreviewStatus(message, type = "") {
+    previewStatus.textContent = message;
+    previewStatus.className = `status ${type}`.trim();
+  }
+
+  function updatePreview() {
+    try {
+      renderPreviewInFrame(output.value, previewFrame);
+      setPreviewStatus("Rezeptseite aktualisiert.", "ok");
+    } catch (err) {
+      previewFrame.srcdoc = "";
+      setPreviewStatus(err.message || "Vorschau fehlgeschlagen.", "error");
+    }
+  }
+
   function runConvert() {
     try {
       const markdown = convertRecipeJsonToMarkdown(input.value);
       output.value = markdown;
       setStatus("Markdown wurde erstellt. Du kannst es kopieren oder in Word einfügen.", "ok");
+      updatePreview();
     } catch (err) {
       output.value = "";
       setStatus(err.message || "Unbekannter Fehler.", "error");
+      previewFrame.srcdoc = "";
+      setPreviewStatus("");
     }
   }
 
@@ -405,6 +428,30 @@ document.addEventListener("DOMContentLoaded", () => {
     else {
       output.value = "";
       setStatus("");
+      previewFrame.srcdoc = "";
+      setPreviewStatus("");
+    }
+  });
+
+  output.addEventListener("input", updatePreview);
+
+  previewUpdateBtn.addEventListener("click", updatePreview);
+
+  previewTabBtn.addEventListener("click", () => {
+    try {
+      openPreviewInNewTab(output.value);
+      setPreviewStatus("Rezeptseite in neuem Tab geöffnet.", "ok");
+    } catch (err) {
+      setPreviewStatus(err.message || "Tab konnte nicht geöffnet werden.", "error");
+    }
+  });
+
+  previewPdfBtn.addEventListener("click", () => {
+    try {
+      printPreviewFromMarkdown(output.value);
+      setPreviewStatus("Druckdialog geöffnet – „Als PDF sichern“ wählen.", "ok");
+    } catch (err) {
+      setPreviewStatus(err.message || "PDF-Export fehlgeschlagen.", "error");
     }
   });
 
@@ -420,8 +467,10 @@ document.addEventListener("DOMContentLoaded", () => {
     urlInput.value = "";
     input.value = "";
     output.value = "";
+    previewFrame.srcdoc = "";
     setStatus("");
     setUrlStatus("");
+    setPreviewStatus("");
     urlInput.focus();
   });
 });
