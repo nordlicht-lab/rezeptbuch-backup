@@ -208,11 +208,13 @@ label {
 .screenshot {
   margin: 1.25rem 0 0;
   padding: 0;
+  max-width: 100%;
 }
 
 .screenshot img {
   display: block;
-  width: 100%;
+  max-width: 100%;
+  width: auto;
   height: auto;
   border: 1px solid var(--line);
   border-radius: 8px;
