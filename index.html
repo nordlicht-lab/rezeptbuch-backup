@@ -13,13 +13,39 @@
       <p class="kicker">Kochbuch für Papa · Notfall-Backup</p>
       <h1>Rezept aus dem Browser sichern</h1>
       <p class="lead">
-        Wenn der automatische Import nicht klappt: Rezept-JSON aus der Browser-Konsole kopieren
-        und hier in lesbares Markdown umwandeln – zum Speichern, Bearbeiten oder Einfügen in Word.
+        Rezept-URL eingeben und automatisch laden – oder im Notfall JSON manuell aus der
+        Browser-Konsole kopieren. Aus beiden Wegen wird lesbares Markdown erzeugt.
       </p>
     </header>
 
+    <section class="step-card step-card-highlight" aria-labelledby="step-quick-title">
+      <h2 id="step-quick-title"><span class="step-num">★</span> Schnellweg: URL eingeben</h2>
+      <p>
+        Gib die Adresse der Rezeptseite ein – die Seite sucht automatisch nach dem
+        eingebetteten <strong>JSON-LD</strong>-Rezept und füllt Schritt 3 für dich aus.
+      </p>
+      <label for="url-input">Rezept-URL</label>
+      <div class="url-row">
+        <input
+          type="url"
+          id="url-input"
+          placeholder="https://www.chefkoch.de/rezept/…"
+          spellcheck="false"
+          inputmode="url"
+        >
+        <button type="button" class="primary" id="fetch-url-btn">Rezept laden</button>
+      </div>
+      <p id="url-status" class="status" role="status" aria-live="polite"></p>
+      <div class="tip-box">
+        Funktioniert bei den meisten Rezeptseiten (Chefkoch, Zucker&Zimt, Familienkost …).
+        Klappt es nicht, nutze unten die manuelle Methode. Beim Laden wird die Seite über
+        einen öffentlichen Proxy abgerufen – nur die URL, kein Login.
+      </div>
+    </section>
+
     <section class="step-card" aria-labelledby="step1-title">
-      <h2 id="step1-title"><span class="step-num">1</span> JSON-LD vom Rezept finden</h2>
+      <h2 id="step1-title"><span class="step-num">1</span> Manuell: JSON-LD aus der Konsole</h2>
+      <p class="step-note">Nur nötig, wenn der Schnellweg oben nicht funktioniert.</p>
       <p>
         Viele Rezeptseiten bieten strukturierte Daten im <strong>JSON-LD</strong>-Format.
         Um diese zu importieren:
@@ -61,8 +87,8 @@
     </section>
 
     <section class="step-card" aria-labelledby="step2-title">
-      <h2 id="step2-title"><span class="step-num">2</span> JSON einfügen</h2>
-      <p>Füge den kopierten Recipe-JSON-Text in das Feld unten ein:</p>
+      <h2 id="step2-title"><span class="step-num">2</span> JSON prüfen oder einfügen</h2>
+      <p>Wird beim Schnellweg automatisch befüllt – oder hier den kopierten Recipe-JSON-Text einfügen:</p>
       <label for="json-input">Kopierter JSON-Text (Recipe-Block)</label>
       <textarea id="json-input" placeholder='{"@type": "Recipe", "name": "...", "recipeIngredient": [...], ...}' spellcheck="false"></textarea>
       <div class="copy-row" style="margin-top: 0.75rem;">
@@ -88,7 +114,8 @@
     </section>
 
     <footer>
-      Statische Seite – läuft komplett im Browser, es werden keine Daten gesendet.
+      Statische Seite – Markdown-Erstellung läuft im Browser. Beim URL-Laden wird die
+      Rezeptseite über einen Proxy abgerufen.
     </footer>
   </div>
   <script src="app.js"></script>

@@ -66,6 +66,48 @@ header .lead {
   margin-bottom: 1.25rem;
 }
 
+.step-card-highlight {
+  border-color: var(--accent);
+  box-shadow: 0 4px 18px rgba(139, 154, 141, 0.12);
+}
+
+.step-note {
+  margin: -0.35rem 0 0.75rem;
+  font-size: 0.92rem;
+  color: var(--muted);
+}
+
+.url-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.url-row input {
+  flex: 1 1 16rem;
+  min-width: 0;
+  padding: 0.55rem 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font: inherit;
+  background: #fff;
+}
+
+.url-row input:focus {
+  outline: 2px solid rgba(139, 154, 141, 0.35);
+  border-color: var(--accent);
+}
+
+.url-row button {
+  flex: 0 0 auto;
+}
+
+button:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
 .step-card h2 {
   margin: 0 0 1rem;
   font-family: Georgia, "Times New Roman", serif;

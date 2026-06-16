@@ -216,6 +216,102 @@ function convertRecipeJsonToMarkdown(raw) {
   return recipeToMarkdown(recipes[0]);
 }
 
+function normalizeUrl(raw) {
+  const trimmed = raw.trim();
+  if (!trimmed) {
+    throw new Error("Bitte eine Rezept-URL eingeben.");
+  }
+
+  const urlString = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+
+  try {
+    return new URL(urlString).toString();
+  } catch {
+    throw new Error("Die URL sieht ungültig aus. Bitte prüfen.");
+  }
+}
+
+function extractJsonLdFromHtml(html) {
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  const blocks = [];
+
+  doc.querySelectorAll('script[type="application/ld+json"]').forEach((script) => {
+    const text = script.textContent.trim();
+    if (!text) return;
+
+    try {
+      blocks.push(JSON.parse(text));
+    } catch {
+      // Ungültige Blöcke überspringen
+    }
+  });
+
+  return blocks;
+}
+
+async function fetchHtml(url) {
+  const attempts = [
+    () => fetch(url, { mode: "cors", headers: { Accept: "text/html" } }),
+    () => fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`),
+    () => fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`),
+  ];
+
+  let lastStatus = "";
+
+  for (const attempt of attempts) {
+    try {
+      const response = await attempt();
+      if (!response.ok) {
+        lastStatus = `HTTP ${response.status}`;
+        continue;
+      }
+
+      const html = await response.text();
+      if (html && html.length > 200) {
+        return html;
+      }
+    } catch (err) {
+      lastStatus = err.message || "Netzwerkfehler";
+    }
+  }
+
+  throw new Error(
+    `Seite konnte nicht geladen werden (${lastStatus || "kein Zugriff"}). Bitte manuelle Methode in Schritt 1 verwenden.`
+  );
+}
+
+function pickRecipeFromBlocks(blocks) {
+  const recipes = [];
+  blocks.forEach((block) => findRecipes(block, recipes));
+
+  if (!recipes.length) {
+    throw new Error(
+      "Auf der Seite wurde kein Recipe-JSON gefunden. Bitte manuelle Methode in Schritt 1 verwenden."
+    );
+  }
+
+  return recipes[0];
+}
+
+async function fetchRecipeFromUrl(rawUrl) {
+  const url = normalizeUrl(rawUrl);
+  const html = await fetchHtml(url);
+  const blocks = extractJsonLdFromHtml(html);
+
+  if (!blocks.length) {
+    throw new Error(
+      "Kein JSON-LD auf der Seite gefunden. Bitte manuelle Methode in Schritt 1 verwenden."
+    );
+  }
+
+  const recipe = pickRecipeFromBlocks(blocks);
+  if (!recipe.url) {
+    recipe.url = url;
+  }
+
+  return recipe;
+}
+
 async function copyText(text, button) {
   const original = button.textContent;
   try {
@@ -234,6 +330,9 @@ const CONSOLE_CMD = `[...document.querySelectorAll('script[type="application/ld+
   .map(t => { try { return JSON.parse(t) } catch { return t } })`;
 
 document.addEventListener("DOMContentLoaded", () => {
+  const urlInput = document.getElementById("url-input");
+  const fetchUrlBtn = document.getElementById("fetch-url-btn");
+  const urlStatus = document.getElementById("url-status");
   const input = document.getElementById("json-input");
   const output = document.getElementById("markdown-output");
   const status = document.getElementById("status");
@@ -249,6 +348,11 @@ document.addEventListener("DOMContentLoaded", () => {
     status.className = `status ${type}`.trim();
   }
 
+  function setUrlStatus(message, type = "") {
+    urlStatus.textContent = message;
+    urlStatus.className = `status ${type}`.trim();
+  }
+
   function runConvert() {
     try {
       const markdown = convertRecipeJsonToMarkdown(input.value);
@@ -259,6 +363,40 @@ document.addEventListener("DOMContentLoaded", () => {
       setStatus(err.message || "Unbekannter Fehler.", "error");
     }
   }
+
+  async function loadRecipeFromUrl() {
+    setUrlStatus("");
+    setStatus("");
+
+    try {
+      fetchUrlBtn.disabled = true;
+      fetchUrlBtn.textContent = "Lädt …";
+      setUrlStatus("Rezeptseite wird geladen …");
+
+      const recipe = await fetchRecipeFromUrl(urlInput.value);
+      input.value = JSON.stringify(recipe, null, 2);
+      runConvert();
+
+      const title = asText(recipe.name) || "Rezept";
+      setUrlStatus(`„${title}" gefunden und Markdown erstellt.`, "ok");
+    } catch (err) {
+      input.value = "";
+      output.value = "";
+      setUrlStatus(err.message || "Unbekannter Fehler.", "error");
+    } finally {
+      fetchUrlBtn.disabled = false;
+      fetchUrlBtn.textContent = "Rezept laden";
+    }
+  }
+
+  fetchUrlBtn.addEventListener("click", loadRecipeFromUrl);
+
+  urlInput.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      loadRecipeFromUrl();
+    }
+  });
 
   convertBtn.addEventListener("click", runConvert);
 
@@ -279,9 +417,11 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   clearBtn.addEventListener("click", () => {
+    urlInput.value = "";
     input.value = "";
     output.value = "";
     setStatus("");
-    input.focus();
+    setUrlStatus("");
+    urlInput.focus();
   });
 });
