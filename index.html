@@ -129,7 +129,7 @@
         <iframe
           id="preview-frame"
           title="Rezeptvorschau"
-          sandbox="allow-same-origin allow-modals"
+          sandbox="allow-same-origin allow-modals allow-scripts"
         ></iframe>
       </div>
       <div class="tip-box">
@@ -141,8 +141,10 @@
     <footer>
       Statische Seite – Markdown-Erstellung läuft im Browser. Beim URL-Laden wird die
       Rezeptseite über einen Proxy abgerufen.
+      <br><a href="cookview.html">CookView</a> – Rezept direkt anzeigen &amp; als PDF speichern.
     </footer>
   </div>
+  <script src="recipe-core.js"></script>
   <script src="preview.js"></script>
   <script src="app.js"></script>
 </body>

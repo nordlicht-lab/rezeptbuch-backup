@@ -2,6 +2,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const urlInput = document.getElementById("url-input");
   const fetchUrlBtn = document.getElementById("fetch-url-btn");
   const urlStatus = document.getElementById("url-status");
+  const fallbackDetails = document.getElementById("fallback-details");
   const input = document.getElementById("json-input");
   const output = document.getElementById("markdown-output");
   const status = document.getElementById("status");
@@ -10,6 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const copyMdBtn = document.getElementById("copy-md-btn");
   const clearBtn = document.getElementById("clear-btn");
   const previewFrame = document.getElementById("preview-frame");
+  const previewEmpty = document.getElementById("preview-empty");
   const previewUpdateBtn = document.getElementById("preview-update-btn");
   const previewTabBtn = document.getElementById("preview-tab-btn");
   const previewPdfBtn = document.getElementById("preview-pdf-btn");
@@ -32,12 +34,29 @@ document.addEventListener("DOMContentLoaded", () => {
     previewStatus.className = `status ${type}`.trim();
   }
 
+  function showPreview() {
+    previewFrame.classList.add("is-visible");
+    previewEmpty.classList.add("is-hidden");
+  }
+
+  function hidePreview() {
+    previewFrame.classList.remove("is-visible");
+    previewFrame.srcdoc = "";
+    previewEmpty.classList.remove("is-hidden");
+  }
+
+  function openFallback() {
+    fallbackDetails.open = true;
+    fallbackDetails.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
   function updatePreview() {
     try {
       renderPreviewInFrame(output.value, previewFrame);
-      setPreviewStatus("Rezeptseite aktualisiert.", "ok");
+      showPreview();
+      setPreviewStatus("Rezeptansicht aktualisiert.", "ok");
     } catch (err) {
-      previewFrame.srcdoc = "";
+      hidePreview();
       setPreviewStatus(err.message || "Vorschau fehlgeschlagen.", "error");
     }
   }
@@ -46,12 +65,12 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const markdown = convertRecipeJsonToMarkdown(input.value);
       output.value = markdown;
-      setStatus("Markdown wurde erstellt. Du kannst es kopieren oder in Word einfügen.", "ok");
+      setStatus("Rezept erstellt.", "ok");
       updatePreview();
     } catch (err) {
       output.value = "";
       setStatus(err.message || "Unbekannter Fehler.", "error");
-      previewFrame.srcdoc = "";
+      hidePreview();
       setPreviewStatus("");
     }
   }
@@ -70,11 +89,13 @@ document.addEventListener("DOMContentLoaded", () => {
       runConvert();
 
       const title = asText(recipe.name) || "Rezept";
-      setUrlStatus(`„${title}" gefunden und Markdown erstellt.`, "ok");
+      setUrlStatus(`„${title}" geladen.`, "ok");
     } catch (err) {
       input.value = "";
       output.value = "";
+      hidePreview();
       setUrlStatus(err.message || "Unbekannter Fehler.", "error");
+      openFallback();
     } finally {
       fetchUrlBtn.disabled = false;
       fetchUrlBtn.textContent = "Rezept laden";
@@ -97,7 +118,7 @@ document.addEventListener("DOMContentLoaded", () => {
     else {
       output.value = "";
       setStatus("");
-      previewFrame.srcdoc = "";
+      hidePreview();
       setPreviewStatus("");
     }
   });
@@ -126,7 +147,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   copyMdBtn.addEventListener("click", () => {
     if (!output.value.trim()) {
-      setStatus("Zuerst Markdown erzeugen.", "error");
+      setStatus("Zuerst Rezept erzeugen.", "error");
       return;
     }
     copyText(output.value, copyMdBtn);
@@ -136,7 +157,7 @@ document.addEventListener("DOMContentLoaded", () => {
     urlInput.value = "";
     input.value = "";
     output.value = "";
-    previewFrame.srcdoc = "";
+    hidePreview();
     setStatus("");
     setUrlStatus("");
     setPreviewStatus("");

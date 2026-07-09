@@ -288,6 +288,110 @@ label {
   background: #fff;
 }
 
+#preview-frame {
+  display: block;
+  width: 100%;
+  min-height: 420px;
+  height: 70vh;
+  border: 0;
+  background: #fff;
+}
+
+.cookview-page .recipe-display-card h2 {
+  margin-bottom: 0.75rem;
+}
+
+.cookview-preview {
+  position: relative;
+  margin-top: 0;
+}
+
+.cookview-preview #preview-frame {
+  display: none;
+  min-height: 480px;
+  height: 75vh;
+}
+
+.cookview-preview #preview-frame.is-visible {
+  display: block;
+}
+
+.preview-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 280px;
+  padding: 2rem;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.preview-empty.is-hidden {
+  display: none;
+}
+
+.recipe-actions {
+  margin-top: 1rem;
+}
+
+.fallback-details {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  margin-bottom: 1.25rem;
+  overflow: hidden;
+}
+
+.fallback-details summary {
+  cursor: pointer;
+  padding: 1rem 1.25rem;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  list-style: none;
+}
+
+.fallback-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.fallback-details summary::before {
+  content: "▸ ";
+  color: var(--accent);
+}
+
+.fallback-details[open] summary::before {
+  content: "▾ ";
+}
+
+.fallback-details[open] summary {
+  border-bottom: 1px solid var(--line);
+}
+
+.fallback-content {
+  padding: 0 1.25rem 1.25rem;
+}
+
+.fallback-step {
+  padding-top: 1.25rem;
+}
+
+.fallback-step h3 {
+  margin: 0 0 0.75rem;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.05rem;
+}
+
+footer a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+footer a:hover {
+  text-decoration: underline;
+}
+
 footer {
   margin-top: 2rem;
   text-align: center;
