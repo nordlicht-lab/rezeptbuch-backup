@@ -301,6 +301,15 @@ label {
   margin-bottom: 0.75rem;
 }
 
+.cookview-preview.preview-frame-wrap {
+  margin-top: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  min-height: auto;
+  overflow: visible;
+}
+
 .cookview-preview {
   position: relative;
   margin-top: 0;
@@ -352,10 +361,10 @@ label {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
-  background: var(--paper);
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 1.5rem;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
 }
 
 .recipe-inline-wrap .recipe-header {
@@ -440,6 +449,44 @@ label {
 
 .recipe-inline-wrap .recipe-source {
   word-break: break-all;
+}
+
+.portion-stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.portion-btn {
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.portion-input {
+  width: 3.5rem;
+  padding: 0.4rem 0.45rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font: inherit;
+  text-align: center;
+  background: #fff;
+}
+
+.portion-input::-webkit-outer-spin-button,
+.portion-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.portion-input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
 }
 
 .cookview-preview .preview-empty {

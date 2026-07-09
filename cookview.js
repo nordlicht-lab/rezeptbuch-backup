@@ -19,6 +19,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const previewPdfBtn = document.getElementById("preview-pdf-btn");
   const previewStatus = document.getElementById("preview-status");
 
+  let baseRecipe = null;
+  let baseServings = 1;
+  let currentServings = 1;
+
   copyCmdBtn.addEventListener("click", () => copyText(CONSOLE_CMD, copyCmdBtn));
 
   function setStatus(message, type = "") {
@@ -69,6 +73,35 @@ document.addEventListener("DOMContentLoaded", () => {
     recipePreview.classList.add("is-hidden");
     recipePreview.innerHTML = "";
     previewEmpty.classList.remove("is-hidden");
+    baseRecipe = null;
+  }
+
+  function getDisplayRecipe() {
+    if (!baseRecipe) {
+      throw new Error("Noch kein Rezept geladen.");
+    }
+    return applyPortionScale(baseRecipe, currentServings, baseServings);
+  }
+
+  function loadBaseRecipeFromMarkdown() {
+    baseRecipe = parseMarkdownToRecipe(output.value);
+    baseServings = parseServingCount(baseRecipe.meta.Portionen);
+    currentServings = baseServings;
+  }
+
+  function renderCurrentRecipe() {
+    const displayRecipe = getDisplayRecipe();
+    renderRecipeObject(recipePreview, displayRecipe, {
+      interactivePortions: true,
+      currentServings,
+    });
+    showPreview();
+  }
+
+  function setPortions(nextValue) {
+    const parsed = Math.max(1, Math.min(99, Number(nextValue) || 1));
+    currentServings = parsed;
+    renderCurrentRecipe();
   }
 
   function openFallback() {
@@ -78,8 +111,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function updatePreview() {
     try {
-      renderPreviewInline(output.value, recipePreview);
-      showPreview();
+      loadBaseRecipeFromMarkdown();
+      renderCurrentRecipe();
       setPreviewStatus("Rezeptansicht aktualisiert.", "ok");
     } catch (err) {
       hidePreview();
@@ -131,6 +164,19 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  recipePreview.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-portion-delta]");
+    if (!button || !baseRecipe) return;
+
+    const delta = Number(button.dataset.portionDelta);
+    setPortions(currentServings + delta);
+  });
+
+  recipePreview.addEventListener("input", (event) => {
+    if (!event.target.classList.contains("portion-input") || !baseRecipe) return;
+    setPortions(event.target.value);
+  });
+
   fetchUrlBtn.addEventListener("click", loadRecipeFromUrl);
 
   urlInput.addEventListener("keydown", (event) => {
@@ -163,7 +209,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   previewTabBtn.addEventListener("click", () => {
     try {
-      openPreviewInNewTab(output.value);
+      openPreviewFromRecipe(getDisplayRecipe());
       setPreviewStatus("Rezeptseite in neuem Tab geöffnet.", "ok");
     } catch (err) {
       setPreviewStatus(err.message || "Tab konnte nicht geöffnet werden.", "error");
@@ -172,7 +218,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   previewPdfBtn.addEventListener("click", () => {
     try {
-      printPreviewFromMarkdown(output.value);
+      printPreviewFromRecipe(getDisplayRecipe());
       setPreviewStatus("Druckdialog geöffnet – „Als PDF sichern“ wählen.", "ok");
     } catch (err) {
       setPreviewStatus(err.message || "PDF-Export fehlgeschlagen.", "error");

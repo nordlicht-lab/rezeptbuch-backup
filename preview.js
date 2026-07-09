@@ -251,13 +251,114 @@ function parseMarkdownToRecipe(markdown) {
   return recipe;
 }
 
-function buildRecipeMarkup(recipe) {
-  const metaItems = Object.entries(recipe.meta)
+function parseServingCount(text) {
+  if (!text) return 1;
+  const value = String(text).trim();
+  const match = value.match(/(\d+(?:[.,]\d+)?)/);
+  if (!match) return 1;
+  const parsed = parseFloat(match[1].replace(",", "."));
+  return parsed > 0 ? parsed : 1;
+}
+
+function formatAmount(value) {
+  const rounded = Math.round(value * 100) / 100;
+  if (Math.abs(rounded - Math.round(rounded)) < 0.01) {
+    return String(Math.round(rounded));
+  }
+
+  const fractions = [
+    [0.25, "1/4"],
+    [0.33, "1/3"],
+    [0.5, "1/2"],
+    [0.66, "2/3"],
+    [0.75, "3/4"],
+  ];
+
+  const whole = Math.floor(rounded);
+  const fraction = rounded - whole;
+
+  for (const [amount, label] of fractions) {
+    if (Math.abs(fraction - amount) < 0.06) {
+      return whole > 0 ? `${whole} ${label}` : label;
+    }
+  }
+
+  return String(rounded).replace(".", ",");
+}
+
+function scaleIngredientAmount(line, factor) {
+  if (!line || factor === 1) return line;
+
+  const rangeMatch = line.match(/^(\d+(?:[.,]\d+)?)\s*-\s*(\d+(?:[.,]\d+)?)\s+(.*)$/);
+  if (rangeMatch) {
+    const start = parseFloat(rangeMatch[1].replace(",", ".")) * factor;
+    const end = parseFloat(rangeMatch[2].replace(",", ".")) * factor;
+    return `${formatAmount(start)}-${formatAmount(end)} ${rangeMatch[3]}`;
+  }
+
+  const fractionMatch = line.match(/^(\d+)\s*\/\s*(\d+)\s+(.*)$/);
+  if (fractionMatch) {
+    const amount = (Number(fractionMatch[1]) / Number(fractionMatch[2])) * factor;
+    return `${formatAmount(amount)} ${fractionMatch[3]}`;
+  }
+
+  const numberMatch = line.match(/^(\d+(?:[.,]\d+)?)\s+(.*)$/);
+  if (numberMatch) {
+    const amount = parseFloat(numberMatch[1].replace(",", ".")) * factor;
+    return `${formatAmount(amount)} ${numberMatch[2]}`;
+  }
+
+  return line;
+}
+
+function applyPortionScale(recipe, targetServings, baseServings = null) {
+  const base = baseServings || parseServingCount(recipe.meta.Portionen);
+  const safeBase = base > 0 ? base : 1;
+  const safeTarget = targetServings > 0 ? targetServings : 1;
+  const factor = safeTarget / safeBase;
+
+  return {
+    ...recipe,
+    meta: {
+      ...recipe.meta,
+      Portionen: String(safeTarget),
+    },
+    ingredients: recipe.ingredients.map((item) => scaleIngredientAmount(item, factor)),
+  };
+}
+
+function buildRecipeMarkup(recipe, options = {}) {
+  const metaEntries = Object.entries(recipe.meta).filter(
+    ([label]) => !(options.interactivePortions && label === "Portionen")
+  );
+
+  const metaItems = metaEntries
     .map(
       ([label, value]) =>
         `<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>`
     )
     .join("");
+
+  const portionControl = options.interactivePortions
+    ? `<div class="portion-control">
+        <dt>Portionen</dt>
+        <dd>
+          <div class="portion-stepper">
+            <button type="button" class="portion-btn" data-portion-delta="-1" aria-label="Weniger Portionen">−</button>
+            <input
+              type="number"
+              class="portion-input"
+              min="1"
+              max="99"
+              step="1"
+              value="${escapeHtml(String(options.currentServings || 1))}"
+              aria-label="Portionen"
+            >
+            <button type="button" class="portion-btn" data-portion-delta="1" aria-label="Mehr Portionen">+</button>
+          </div>
+        </dd>
+      </div>`
+    : "";
 
   const ingredients = recipe.ingredients
     .map((item) => `<li>${escapeHtml(item)}</li>`)
@@ -284,7 +385,7 @@ function buildRecipeMarkup(recipe) {
       <header class="recipe-header">
         <h1>${escapeHtml(recipe.title)}</h1>
         ${description}
-        ${metaItems ? `<dl class="recipe-meta">${metaItems}</dl>` : ""}
+        ${metaItems || portionControl ? `<dl class="recipe-meta">${metaItems}${portionControl}</dl>` : ""}
       </header>
       <div class="recipe-body">
         <section class="ingredients">
@@ -333,10 +434,47 @@ function buildPreviewDocument(markdown, options = {}) {
   return { recipe, html };
 }
 
-function renderPreviewInline(markdown, container) {
+function renderPreviewInline(markdown, container, options = {}) {
   const recipe = parseMarkdownToRecipe(markdown);
-  container.innerHTML = buildRecipeMarkup(recipe);
+  container.innerHTML = buildRecipeMarkup(recipe, options);
   return recipe;
+}
+
+function renderRecipeObject(container, recipe, options = {}) {
+  container.innerHTML = buildRecipeMarkup(recipe, options);
+  return recipe;
+}
+
+function openPreviewFromRecipe(recipe) {
+  const html = buildPreviewHtml(recipe, { showToolbar: true });
+  const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const tab = window.open(url, "_blank");
+  if (!tab) {
+    URL.revokeObjectURL(url);
+    throw new Error("Pop-up blockiert. Bitte Pop-ups erlauben oder Vorschau im Frame nutzen.");
+  }
+  tab.addEventListener("load", () => URL.revokeObjectURL(url));
+  return url;
+}
+
+function printPreviewFromRecipe(recipe) {
+  const html = buildPreviewHtml(recipe, { showToolbar: false });
+  const frame = document.createElement("iframe");
+  frame.style.position = "fixed";
+  frame.style.right = "0";
+  frame.style.bottom = "0";
+  frame.style.width = "0";
+  frame.style.height = "0";
+  frame.style.border = "0";
+  document.body.appendChild(frame);
+
+  frame.srcdoc = html;
+  frame.onload = () => {
+    frame.contentWindow.focus();
+    frame.contentWindow.print();
+    setTimeout(() => frame.remove(), 1000);
+  };
 }
 
 function openPreviewInNewTab(markdown) {
