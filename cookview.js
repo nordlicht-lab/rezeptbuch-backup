@@ -2,6 +2,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const urlInput = document.getElementById("url-input");
   const fetchUrlBtn = document.getElementById("fetch-url-btn");
   const urlStatus = document.getElementById("url-status");
+  const urlLoading = document.getElementById("url-loading");
   const fallbackDetails = document.getElementById("fallback-details");
   const input = document.getElementById("json-input");
   const output = document.getElementById("markdown-output");
@@ -10,7 +11,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const copyCmdBtn = document.getElementById("copy-cmd-btn");
   const copyMdBtn = document.getElementById("copy-md-btn");
   const clearBtn = document.getElementById("clear-btn");
-  const previewFrame = document.getElementById("preview-frame");
+  const recipePreview = document.getElementById("recipe-preview");
+  const previewLoading = document.getElementById("preview-loading");
   const previewEmpty = document.getElementById("preview-empty");
   const previewUpdateBtn = document.getElementById("preview-update-btn");
   const previewTabBtn = document.getElementById("preview-tab-btn");
@@ -34,14 +36,38 @@ document.addEventListener("DOMContentLoaded", () => {
     previewStatus.className = `status ${type}`.trim();
   }
 
+  function showUrlLoading() {
+    urlLoading.classList.remove("is-hidden");
+    urlLoading.setAttribute("aria-hidden", "false");
+  }
+
+  function hideUrlLoading() {
+    urlLoading.classList.add("is-hidden");
+    urlLoading.setAttribute("aria-hidden", "true");
+  }
+
+  function showPreviewLoading() {
+    previewLoading.classList.remove("is-hidden");
+    previewLoading.setAttribute("aria-hidden", "false");
+    recipePreview.classList.add("is-hidden");
+    previewEmpty.classList.add("is-hidden");
+  }
+
+  function hidePreviewLoading() {
+    previewLoading.classList.add("is-hidden");
+    previewLoading.setAttribute("aria-hidden", "true");
+  }
+
   function showPreview() {
-    previewFrame.classList.add("is-visible");
+    hidePreviewLoading();
+    recipePreview.classList.remove("is-hidden");
     previewEmpty.classList.add("is-hidden");
   }
 
   function hidePreview() {
-    previewFrame.classList.remove("is-visible");
-    previewFrame.srcdoc = "";
+    hidePreviewLoading();
+    recipePreview.classList.add("is-hidden");
+    recipePreview.innerHTML = "";
     previewEmpty.classList.remove("is-hidden");
   }
 
@@ -52,7 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function updatePreview() {
     try {
-      renderPreviewInFrame(output.value, previewFrame);
+      renderPreviewInline(output.value, recipePreview);
       showPreview();
       setPreviewStatus("Rezeptansicht aktualisiert.", "ok");
     } catch (err) {
@@ -78,11 +104,13 @@ document.addEventListener("DOMContentLoaded", () => {
   async function loadRecipeFromUrl() {
     setUrlStatus("");
     setStatus("");
+    setPreviewStatus("");
+    showUrlLoading();
+    showPreviewLoading();
 
     try {
       fetchUrlBtn.disabled = true;
       fetchUrlBtn.textContent = "Lädt …";
-      setUrlStatus("Rezeptseite wird geladen …");
 
       const recipe = await fetchRecipeFromUrl(urlInput.value);
       input.value = JSON.stringify(recipe, null, 2);
@@ -99,6 +127,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } finally {
       fetchUrlBtn.disabled = false;
       fetchUrlBtn.textContent = "Rezept laden";
+      hideUrlLoading();
     }
   }
 
@@ -111,11 +140,16 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  convertBtn.addEventListener("click", runConvert);
+  convertBtn.addEventListener("click", () => {
+    showPreviewLoading();
+    runConvert();
+  });
 
   input.addEventListener("input", () => {
-    if (input.value.trim()) runConvert();
-    else {
+    if (input.value.trim()) {
+      showPreviewLoading();
+      runConvert();
+    } else {
       output.value = "";
       setStatus("");
       hidePreview();
@@ -158,6 +192,7 @@ document.addEventListener("DOMContentLoaded", () => {
     input.value = "";
     output.value = "";
     hidePreview();
+    hideUrlLoading();
     setStatus("");
     setUrlStatus("");
     setPreviewStatus("");

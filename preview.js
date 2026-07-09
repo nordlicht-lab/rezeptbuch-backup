@@ -251,7 +251,7 @@ function parseMarkdownToRecipe(markdown) {
   return recipe;
 }
 
-function buildPreviewHtml(recipe) {
+function buildRecipeMarkup(recipe) {
   const metaItems = Object.entries(recipe.meta)
     .map(
       ([label, value]) =>
@@ -279,19 +279,7 @@ function buildPreviewHtml(recipe) {
     ? `<p class="recipe-source">Quelle: ${escapeHtml(recipe.source)}</p>`
     : "";
 
-  return `<!DOCTYPE html>
-<html lang="de">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>${escapeHtml(recipe.title)}</title>
-  <style>${PREVIEW_CSS}</style>
-</head>
-<body class="recipe-page">
-  <div class="page-wrap">
-    <div class="toolbar no-print">
-      <button type="button" class="primary" onclick="window.print()">Als PDF speichern / Drucken</button>
-    </div>
+  return `
     <article class="recipe">
       <header class="recipe-header">
         <h1>${escapeHtml(recipe.title)}</h1>
@@ -311,19 +299,48 @@ function buildPreviewHtml(recipe) {
       ${notes}
       ${source}
     </article>
+  `;
+}
+
+function buildPreviewHtml(recipe, options = {}) {
+  const showToolbar = options.showToolbar !== false;
+  const toolbar = showToolbar
+    ? `<div class="toolbar no-print">
+      <button type="button" class="primary" onclick="window.print()">Als PDF speichern / Drucken</button>
+    </div>`
+    : "";
+
+  return `<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>${escapeHtml(recipe.title)}</title>
+  <style>${PREVIEW_CSS}</style>
+</head>
+<body class="recipe-page">
+  <div class="page-wrap">
+    ${toolbar}
+    ${buildRecipeMarkup(recipe)}
   </div>
 </body>
 </html>`;
 }
 
-function buildPreviewDocument(markdown) {
+function buildPreviewDocument(markdown, options = {}) {
   const recipe = parseMarkdownToRecipe(markdown);
-  const html = buildPreviewHtml(recipe);
+  const html = buildPreviewHtml(recipe, options);
   return { recipe, html };
 }
 
+function renderPreviewInline(markdown, container) {
+  const recipe = parseMarkdownToRecipe(markdown);
+  container.innerHTML = buildRecipeMarkup(recipe);
+  return recipe;
+}
+
 function openPreviewInNewTab(markdown) {
-  const { html } = buildPreviewDocument(markdown);
+  const { html } = buildPreviewDocument(markdown, { showToolbar: true });
   const blob = new Blob([html], { type: "text/html;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const tab = window.open(url, "_blank");
@@ -341,7 +358,7 @@ function renderPreviewInFrame(markdown, iframe) {
 }
 
 function printPreviewFromMarkdown(markdown) {
-  const { html } = buildPreviewDocument(markdown);
+  const { html } = buildPreviewDocument(markdown, { showToolbar: false });
   const frame = document.createElement("iframe");
   frame.style.position = "fixed";
   frame.style.right = "0";

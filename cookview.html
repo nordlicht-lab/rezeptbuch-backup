@@ -10,7 +10,6 @@
 <body class="cookview-page">
   <div class="page">
     <header>
-      <p class="kicker">Kochbuch für Papa</p>
       <h1>CookView</h1>
       <p class="lead">
         Rezept-URL eingeben – sofort als übersichtliche Rezeptseite anzeigen,
@@ -19,7 +18,7 @@
     </header>
 
     <section class="step-card step-card-highlight" aria-labelledby="url-title">
-      <h2 id="url-title"><span class="step-num">★</span> URL eingeben</h2>
+      <h2 id="url-title">URL eingeben</h2>
       <p>
         Gib die Adresse der Rezeptseite ein – CookView sucht automatisch nach dem
         eingebetteten <strong>JSON-LD</strong>-Rezept.
@@ -36,6 +35,10 @@
         <button type="button" class="primary" id="fetch-url-btn">Rezept laden</button>
       </div>
       <p id="url-status" class="status" role="status" aria-live="polite"></p>
+      <div id="url-loading" class="loading-indicator is-hidden" aria-hidden="true">
+        <span class="loading-spinner" aria-hidden="true"></span>
+        <span>Rezept wird geladen …</span>
+      </div>
       <div class="tip-box">
         Funktioniert bei den meisten Rezeptseiten (Chefkoch, Zucker&Zimt, Familienkost …).
         Klappt es nicht, klappe die manuelle Alternative unten auf.
@@ -43,25 +46,27 @@
     </section>
 
     <section class="step-card recipe-display-card" aria-labelledby="recipe-title">
-      <h2 id="recipe-title"><span class="step-num">1</span> Rezept</h2>
+      <h2 id="recipe-title">Rezept</h2>
       <div class="preview-frame-wrap cookview-preview">
-        <iframe
-          id="preview-frame"
-          title="Rezeptansicht"
-          sandbox="allow-same-origin allow-modals allow-scripts"
-        ></iframe>
+        <div id="preview-loading" class="preview-loading is-hidden" aria-hidden="true">
+          <span class="loading-spinner" aria-hidden="true"></span>
+          <span>Rezept wird aufbereitet …</span>
+        </div>
+        <div id="recipe-preview" class="recipe-inline-wrap is-hidden"></div>
         <div id="preview-empty" class="preview-empty">
           Noch kein Rezept geladen – URL oben eingeben und „Rezept laden“ klicken.
         </div>
       </div>
       <div class="copy-row recipe-actions">
-        <button type="button" class="primary" id="preview-update-btn">Vorschau aktualisieren</button>
+        <button type="button" id="preview-update-btn">Vorschau aktualisieren</button>
         <button type="button" id="preview-tab-btn">In neuem Tab öffnen</button>
-        <button type="button" id="preview-pdf-btn">Als PDF speichern</button>
+      </div>
+      <div class="copy-row recipe-actions-bottom">
+        <button type="button" class="primary" id="preview-pdf-btn">Als PDF exportieren / Drucken</button>
       </div>
       <p id="preview-status" class="status" role="status" aria-live="polite"></p>
       <div class="tip-box">
-        <strong>PDF:</strong> „Als PDF speichern“ öffnet den Druckdialog → Ziel
+        <strong>PDF:</strong> „Als PDF exportieren / Drucken“ öffnet den Druckdialog → Ziel
         <strong>Als PDF sichern</strong> wählen (Chrome/Safari/Firefox).
       </div>
     </section>

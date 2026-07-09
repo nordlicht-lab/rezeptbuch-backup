@@ -304,6 +304,171 @@ label {
 .cookview-preview {
   position: relative;
   margin-top: 0;
+  overflow: visible;
+  min-height: auto;
+}
+
+.loading-indicator,
+.preview-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-top: 0.75rem;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.preview-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  margin-top: 0;
+}
+
+.loading-spinner {
+  width: 1.15rem;
+  height: 1.15rem;
+  border: 2px solid var(--line);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.is-hidden {
+  display: none !important;
+}
+
+.recipe-inline-wrap {
+  padding: 0.25rem 0;
+}
+
+.recipe-inline-wrap .recipe {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.recipe-inline-wrap .recipe-header {
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 0.85rem;
+}
+
+.recipe-inline-wrap .recipe-header h1 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.75rem;
+  margin: 0 0 0.35rem;
+  line-height: 1.15;
+}
+
+.recipe-inline-wrap .recipe-description {
+  color: var(--muted);
+  margin: 0 0 0.65rem;
+}
+
+.recipe-inline-wrap .recipe-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 1rem;
+  margin: 0;
+}
+
+.recipe-inline-wrap .recipe-meta div {
+  display: flex;
+  gap: 0.3rem;
+  align-items: baseline;
+}
+
+.recipe-inline-wrap .recipe-meta dt {
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.recipe-inline-wrap .recipe-meta dd {
+  margin: 0;
+  font-weight: 500;
+}
+
+.recipe-inline-wrap .recipe-body {
+  display: grid;
+  grid-template-columns: minmax(160px, 220px) 1fr;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.recipe-inline-wrap .ingredients h2,
+.recipe-inline-wrap .steps h2,
+.recipe-inline-wrap .recipe-notes h2 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.15rem;
+  margin: 0 0 0.55rem;
+}
+
+.recipe-inline-wrap .ingredients ul,
+.recipe-inline-wrap .steps ol {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.recipe-inline-wrap .ingredients li,
+.recipe-inline-wrap .steps li {
+  margin-bottom: 0.3rem;
+}
+
+.recipe-inline-wrap .recipe-notes {
+  border-top: 1px solid var(--line);
+  padding-top: 0.75rem;
+}
+
+.recipe-inline-wrap .recipe-notes p,
+.recipe-inline-wrap .recipe-source {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.recipe-inline-wrap .recipe-source {
+  word-break: break-all;
+}
+
+.cookview-preview .preview-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  padding: 2rem;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.recipe-actions {
+  margin-top: 1rem;
+}
+
+.recipe-actions-bottom {
+  margin-top: 0.65rem;
+}
+
+.recipe-actions-bottom button {
+  width: 100%;
+}
+
+@media (max-width: 720px) {
+  .recipe-inline-wrap .recipe-body {
+    grid-template-columns: 1fr;
+  }
 }
 
 .cookview-preview #preview-frame {
