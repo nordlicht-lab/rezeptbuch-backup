@@ -501,19 +501,24 @@ label {
 }
 
 .recipe-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
   margin-top: 1rem;
 }
 
-.recipe-actions-bottom {
-  margin-top: 0.65rem;
-}
-
-.recipe-actions-bottom button {
+.recipe-actions button {
   width: 100%;
+  min-height: 2.75rem;
+  padding: 0.55rem 0.75rem;
 }
 
 @media (max-width: 720px) {
   .recipe-inline-wrap .recipe-body {
+    grid-template-columns: 1fr;
+  }
+
+  .recipe-actions {
     grid-template-columns: 1fr;
   }
 }
@@ -541,10 +546,6 @@ label {
 
 .preview-empty.is-hidden {
   display: none;
-}
-
-.recipe-actions {
-  margin-top: 1rem;
 }
 
 .fallback-details {
